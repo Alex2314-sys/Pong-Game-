@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mario & Luigi Pong</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #5c94fc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Press Start 2P', 'Courier New', monospace;
+      overflow: hidden;
+    }
+
+    /* Pixel-art Google Font fallback handled via canvas */
+    h1 {
+      color: #ffd700;
+      font-size: 2rem;
+      text-shadow: 3px 3px 0 #b8860b, -1px -1px 0 #b8860b;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #controls-info {
+      color: #fff;
+      font-size: 0.55rem;
+      margin-bottom: 12px;
+      text-align: center;
+      line-height: 1.8;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    #game-wrapper {
+      position: relative;
+    }
+
+    canvas {
+      border: 4px solid #ffd700;
+      box-shadow: 0 0 0 4px #b8860b, 0 8px 32px rgba(0,0,0,0.5);
+      display: block;
+      background: #000;
+      image-rendering: pixelated;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 50, 0.78);
+      color: #fff;
+    }
+
+    #overlay h2 {
+      font-size: 1.4rem;
+      color: #ffd700;
+      text-shadow: 2px 2px 0 #b8860b;
+      margin-bottom: 16px;
+    }
+
+    #overlay p {
+      font-size: 0.6rem;
+      margin-bottom: 8px;
+      text-align: center;
+      line-height: 2;
+    }
+
+    #start-btn {
+      margin-top: 16px;
+      padding: 12px 28px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      background: #e52521;
+      color: #fff;
+      border: 3px solid #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #7a0000;
+      transition: transform 0.1s;
+    }
+
+    #start-btn:hover {
+      transform: scale(1.05);
+      background: #ff4040;
+    }
+
+    #win-banner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.85);
+      border: 4px solid #ffd700;
+      padding: 24px 36px;
+      text-align: center;
+      color: #ffd700;
+      font-size: 1rem;
+      text-shadow: 2px 2px 0 #b8860b;
+    }
+
+    #win-banner p {
+      font-size: 0.6rem;
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    /* Clouds decoration */
+    .cloud {
+      position: fixed;
+      width: 80px;
+      height: 30px;
+      background: #fff;
+      border-radius: 50px;
+      opacity: 0.6;
+    }
+    .cloud::before {
+      content: '';
+      position: absolute;
+      top: -18px; left: 15px;
+      width: 40px; height: 40px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    .cloud::after {
+      content: '';
+      position: absolute;
+      top: -10px; left: 35px;
+      width: 28px; height: 28px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    #c1 { top: 8%; left: 5%; animation: drift 18s linear infinite; }
+    #c2 { top: 15%; right: 8%; animation: drift 22s linear infinite reverse; }
+    #c3 { top: 5%; left: 40%; animation: drift 26s linear infinite; }
+
+    @keyframes drift {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(30px); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Ground blocks at the bottom */
+    #ground {
+      display: flex;
+      margin-top: 6px;
+    }
+
+    .block {
+      width: 28px; height: 28px;
+      background: #c84b0e;
+      border: 2px solid #7a2c00;
+      box-shadow: inset 2px 2px 0 #e06020;
+    }
+    .block.q {
+      background: #f0a000;
+      border-color: #7a5000;
+      box-shadow: inset 2px 2px 0 #ffd040;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Decorative clouds -->
+  <div class="cloud" id="c1"></div>
+  <div class="cloud" id="c2"></div>
+  <div class="cloud" id="c3"></div>
+
+  <h1>MARIO &amp; LUIGI PONG</h1>
+  <div id="controls-info">
+    MARIO (left): W / S &nbsp;&nbsp;|&nbsp;&nbsp; LUIGI (right): &uarr; / &darr;
+  </div>
+
+  <div id="game-wrapper">
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+    <div id="overlay">
+      <h2>MARIO &amp; LUIGI PONG</h2>
+      <p>
+        MARIO controls LEFT paddle: W &amp; S<br>
+        LUIGI controls RIGHT paddle: &uarr; &amp; &darr;<br>
+        First to <span id="win-score-display">7</span> points wins!
+      </p>
+      <button id="start-btn">PRESS START!</button>
+    </div>
+
+    <div id="win-banner">
+      <div id="winner-text">MARIO WINS!</div>
+      <p>Press SPACE or click to play again</p>
+    </div>
+  </div>
+
+  <!-- Decorative ground blocks -->
+  <div id="ground">
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+    <div class="block"></div>
+    <div class="block q"></div>
+  </div>
+
+<script>
+// ─── Canvas & Context ─────────────────────────────────────────────────────────
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+
+// ─── Web Audio ────────────────────────────────────────────────────────────────
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function beep(freq, type, duration, vol = 0.3) {
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime);
+    gain.gain.setValueAtTime(vol, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+    osc.start(ac.currentTime);
+    osc.stop(ac.currentTime + duration);
+  } catch(e) {}
+}
+
+function soundPaddleHit() {
+  beep(440, 'square', 0.08, 0.25);
+  setTimeout(() => beep(550, 'square', 0.06, 0.15), 40);
+}
+
+function soundWallHit() {
+  beep(300, 'square', 0.07, 0.2);
+}
+
+function soundScore() {
+  // Mario coin sound approximation
+  [988, 1319].forEach((f, i) => setTimeout(() => beep(f, 'square', 0.12, 0.3), i * 100));
+}
+
+function soundWin() {
+  const melody = [523, 659, 784, 1047];
+  melody.forEach((f, i) => setTimeout(() => beep(f, 'square', 0.18, 0.35), i * 160));
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const PADDLE_W = 18;
+const PADDLE_H = 90;
+const BALL_SIZE = 14;
+const PADDLE_SPEED = 6;
+const WIN_SCORE = 7;
+const WALL_MARGIN = 10;
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let gameRunning = false;
+let gameOver    = false;
+let mario, luigi, ball, scores, keys;
+
+function initGame() {
+  mario = { x: 20, y: H/2 - PADDLE_H/2, w: PADDLE_W, h: PADDLE_H, dy: 0 };
+  luigi = { x: W - 20 - PADDLE_W, y: H/2 - PADDLE_H/2, w: PADDLE_W, h: PADDLE_H, dy: 0 };
+  ball  = resetBall();
+  scores = { mario: 0, luigi: 0 };
+  keys   = {};
+  gameOver = false;
+}
+
+function resetBall(lastScoredSide = null) {
+  const angle = (Math.random() * 60 - 30) * Math.PI / 180;
+  let dx = 5 * Math.cos(angle);
+  let dy = 5 * Math.sin(angle);
+  // Serve toward the player who just lost (or random on start)
+  if (lastScoredSide === 'mario') dx = -Math.abs(dx); // toward luigi
+  else if (lastScoredSide === 'luigi') dx =  Math.abs(dx); // toward mario
+  else dx = Math.random() < 0.5 ? Math.abs(dx) : -Math.abs(dx);
+  return {
+    x: W/2, y: H/2,
+    dx, dy,
+    size: BALL_SIZE,
+    speed: 5,
+    hitCount: 0,
+    trail: []
+  };
+}
+
+// ─── Pixel Art Helpers ────────────────────────────────────────────────────────
+function drawPixelArt(data, x, y, scale, palette) {
+  for (let row = 0; row < data.length; row++) {
+    for (let col = 0; col < data[row].length; col++) {
+      const code = data[row][col];
+      if (code === 0) continue;
+      ctx.fillStyle = palette[code];
+      ctx.fillRect(x + col * scale, y + row * scale, scale, scale);
+    }
+  }
+}
+
+// Mario pixel art (16x24, facing right)
+// Palette: 1=skin, 2=red, 3=blue, 4=brown, 5=white, 6=black
+const MARIO_SPRITE = [
+  [0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0],
+  [0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,0],
+  [0,0,4,4,4,1,1,4,1,0,0,0,0,0,0,0],
+  [0,4,1,4,1,1,1,4,1,1,1,0,0,0,0,0],
+  [0,4,1,4,4,1,1,1,4,1,1,1,0,0,0,0],
+  [0,4,4,1,1,1,1,4,4,4,4,0,0,0,0,0],
+  [0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0],
+  [0,0,2,2,3,2,2,2,0,0,0,0,0,0,0,0],
+  [0,2,2,2,3,2,2,2,2,2,2,0,0,0,0,0],
+  [2,2,2,3,3,3,2,2,2,2,0,0,0,0,0,0],
+  [1,1,3,3,3,3,3,3,1,0,0,0,0,0,0,0],
+  [1,3,3,3,3,3,3,3,3,1,0,0,0,0,0,0],
+  [3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0],
+  [1,1,3,3,1,3,3,3,1,0,0,0,0,0,0,0],
+  [1,1,1,3,3,3,3,1,1,0,0,0,0,0,0,0],
+  [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+  [0,0,4,4,0,0,4,4,0,0,0,0,0,0,0,0],
+  [0,4,4,4,0,0,4,4,4,0,0,0,0,0,0,0],
+];
+const MARIO_PAL = {
+  1: '#ffa07a', // skin
+  2: '#e52521', // red
+  3: '#0050d4', // blue overalls
+  4: '#8b4513', // brown
+  5: '#fff',
+  6: '#000'
+};
+
+// Luigi pixel art (same shape but green hat)
+const LUIGI_PAL = {
+  1: '#ffa07a', // skin
+  2: '#2ab72a', // green hat
+  3: '#1a7a1a', // dark green overalls
+  4: '#8b4513', // brown
+  5: '#fff',
+  6: '#000'
+};
+
+// Coin pixel art (8x8)
+const COIN_SPRITE = [
+  [0,1,1,1,1,0,0,0],
+  [1,2,2,2,2,1,0,0],
+  [1,2,1,2,2,1,0,0],
+  [1,2,2,2,2,1,0,0],
+  [1,2,2,2,2,1,0,0],
+  [1,2,1,2,2,1,0,0],
+  [1,2,2,2,2,1,0,0],
+  [0,1,1,1,1,0,0,0],
+];
+const COIN_PAL = { 1: '#b8860b', 2: '#ffd700' };
+
+// ─── Drawing Functions ────────────────────────────────────────────────────────
+
+function drawBackground() {
+  // Sky
+  ctx.fillStyle = '#5c94fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Ground strip
+  ctx.fillStyle = '#c84b0e';
+  ctx.fillRect(0, H - 40, W, 40);
+  ctx.fillStyle = '#5a2200';
+  ctx.fillRect(0, H - 40, W, 4);
+
+  // Dotted center line (pipes style)
+  ctx.setLineDash([14, 10]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(W/2, 0);
+  ctx.lineTo(W/2, H - 40);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Decorative question blocks
+  drawQuestionBlock(W/2 - 25, H - 90);
+  drawQuestionBlock(W/2 + 5,  H - 90);
+}
+
+function drawQuestionBlock(x, y) {
+  const s = 24;
+  ctx.fillStyle = '#f0a000';
+  ctx.fillRect(x, y, s, s);
+  ctx.fillStyle = '#7a5000';
+  ctx.fillRect(x, y, s, 2);
+  ctx.fillRect(x, y + s - 2, s, 2);
+  ctx.fillRect(x, y, 2, s);
+  ctx.fillRect(x + s - 2, y, 2, s);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('?', x + 7, y + 17);
+}
+
+function drawPaddle(p, spriteData, palette, label) {
+  // Paddle body
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(p.x + 3, p.y + 3, p.w, p.h);
+
+  const grad = ctx.createLinearGradient(p.x, 0, p.x + p.w, 0);
+  grad.addColorStop(0, label === 'MARIO' ? '#e52521' : '#2ab72a');
+  grad.addColorStop(1, label === 'MARIO' ? '#ff6040' : '#60e060');
+  ctx.fillStyle = grad;
+  ctx.fillRect(p.x, p.y, p.w, p.h);
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(p.x, p.y, p.w, p.h);
+
+  // Draw character sprite centered on paddle
+  const scale = 3;
+  const spriteW = spriteData[0].length * scale;
+  const spriteH = spriteData.length * scale;
+  const sx = p.x + p.w/2 - spriteW/2 + (label === 'MARIO' ? 14 : -2);
+  const sy = p.y + p.h/2 - spriteH/2;
+  drawPixelArt(spriteData, sx, sy, scale, palette);
+
+  // Name label
+  ctx.save();
+  ctx.fillStyle = '#ffd700';
+  ctx.font = '8px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, p.x + p.w/2, p.y - 6);
+  ctx.restore();
+}
+
+function drawBall(b) {
+  // Trail effect
+  for (let i = 0; i < b.trail.length; i++) {
+    const t = b.trail[i];
+    const alpha = (i / b.trail.length) * 0.4;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, b.size/2 * (i / b.trail.length), 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Draw coin sprite for ball
+  const scale = 2;
+  drawPixelArt(COIN_SPRITE, b.x - b.size/2 - 2, b.y - b.size/2 - 2, scale, COIN_PAL);
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, b.size/2 + 2, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+function drawScore() {
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 36px "Courier New", monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(scores.mario, W/2 - 40, 50);
+  ctx.textAlign = 'left';
+  ctx.fillText(scores.luigi, W/2 + 40, 50);
+
+  // Separator
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 28px "Courier New", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(':', W/2, 48);
+
+  // Hearts / lives indicator (decorative)
+  for (let i = 0; i < WIN_SCORE; i++) {
+    const filled = i < scores.mario;
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = filled ? '#e52521' : '#444';
+    ctx.fillText('♥', 60 + i * 18, 20);
+  }
+  for (let i = 0; i < WIN_SCORE; i++) {
+    const filled = i < scores.luigi;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = filled ? '#2ab72a' : '#444';
+    ctx.fillText('♥', W - 60 - i * 18, 20);
+  }
+}
+
+function drawPipes() {
+  // Left pipe
+  ctx.fillStyle = '#2ab72a';
+  ctx.fillRect(30, H - 100, 36, 60);
+  ctx.fillStyle = '#1a8a1a';
+  ctx.fillRect(24, H - 106, 48, 14);
+
+  // Right pipe
+  ctx.fillRect(W - 66, H - 100, 36, 60);
+  ctx.fillStyle = '#2ab72a';
+  ctx.fillRect(W - 72, H - 106, 48, 14);
+}
+
+// ─── Game Logic ───────────────────────────────────────────────────────────────
+
+function update() {
+  if (!gameRunning || gameOver) return;
+
+  // Paddle movement
+  if (keys['w'] || keys['W']) mario.dy = -PADDLE_SPEED;
+  else if (keys['s'] || keys['S']) mario.dy = PADDLE_SPEED;
+  else mario.dy = 0;
+
+  if (keys['ArrowUp'])   luigi.dy = -PADDLE_SPEED;
+  else if (keys['ArrowDown']) luigi.dy = PADDLE_SPEED;
+  else luigi.dy = 0;
+
+  mario.y = Math.max(WALL_MARGIN, Math.min(H - 40 - PADDLE_H - WALL_MARGIN, mario.y + mario.dy));
+  luigi.y = Math.max(WALL_MARGIN, Math.min(H - 40 - PADDLE_H - WALL_MARGIN, luigi.y + luigi.dy));
+
+  // Ball trail
+  ball.trail.push({ x: ball.x, y: ball.y });
+  if (ball.trail.length > 8) ball.trail.shift();
+
+  // Ball movement
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  // Wall bounces (top / bottom of play area)
+  if (ball.y - ball.size/2 <= WALL_MARGIN) {
+    ball.y = WALL_MARGIN + ball.size/2;
+    ball.dy = Math.abs(ball.dy);
+    soundWallHit();
+  }
+  if (ball.y + ball.size/2 >= H - 40 - WALL_MARGIN) {
+    ball.y = H - 40 - WALL_MARGIN - ball.size/2;
+    ball.dy = -Math.abs(ball.dy);
+    soundWallHit();
+  }
+
+  // Paddle collisions
+  if (rectCircle(mario, ball)) {
+    ball.dx = Math.abs(ball.dx);
+    // Angle based on where ball hits paddle
+    const relativeHit = (ball.y - mario.y) / mario.h - 0.5;
+    ball.dy = relativeHit * 8;
+    clampBallSpeed();
+    soundPaddleHit();
+    ball.hitCount++;
+  }
+
+  if (rectCircle(luigi, ball)) {
+    ball.dx = -Math.abs(ball.dx);
+    const relativeHit = (ball.y - luigi.y) / luigi.h - 0.5;
+    ball.dy = relativeHit * 8;
+    clampBallSpeed();
+    soundPaddleHit();
+    ball.hitCount++;
+  }
+
+  // Score
+  if (ball.x + ball.size/2 < 0) {
+    scores.luigi++;
+    soundScore();
+    checkWin('luigi');
+    if (!gameOver) ball = resetBall('luigi');
+  }
+  if (ball.x - ball.size/2 > W) {
+    scores.mario++;
+    soundScore();
+    checkWin('mario');
+    if (!gameOver) ball = resetBall('mario');
+  }
+
+  // Gradually speed up ball
+  const speedFactor = 1 + ball.hitCount * 0.012;
+  const currentSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+  const targetSpeed = Math.min(ball.speed * speedFactor, 16);
+  if (currentSpeed > 0.1) {
+    const ratio = targetSpeed / currentSpeed;
+    ball.dx *= ratio;
+    ball.dy *= ratio;
+  }
+}
+
+function clampBallSpeed() {
+  const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+  if (speed < 4) {
+    const ratio = 4 / speed;
+    ball.dx *= ratio;
+    ball.dy *= ratio;
+  }
+}
+
+function rectCircle(rect, circle) {
+  const nearX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w));
+  const nearY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h));
+  const dx = circle.x - nearX;
+  const dy = circle.y - nearY;
+  return dx*dx + dy*dy <= (circle.size/2) * (circle.size/2);
+}
+
+function checkWin(side) {
+  if (scores[side] >= WIN_SCORE) {
+    gameOver = true;
+    gameRunning = false;
+    soundWin();
+    const banner = document.getElementById('win-banner');
+    document.getElementById('winner-text').textContent =
+      side === 'mario' ? 'MARIO WINS! 🍄' : 'LUIGI WINS! 🌟';
+    banner.style.display = 'block';
+  }
+}
+
+// ─── Render Loop ──────────────────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawBackground();
+  drawPipes();
+  drawScore();
+  drawPaddle(mario, MARIO_SPRITE, MARIO_PAL, 'MARIO');
+  drawPaddle(luigi, MARIO_SPRITE, LUIGI_PAL, 'LUIGI');
+  drawBall(ball);
+}
+
+let lastTime = 0;
+function gameLoop(ts) {
+  if (ts - lastTime >= 16) { // ~60fps cap
+    update();
+    render();
+    lastTime = ts;
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+// ─── Input Handling ───────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if (['ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
+
+  // Space to restart after win
+  if (e.key === ' ' && gameOver) restartGame();
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+// ─── UI Button Logic ──────────────────────────────────────────────────────────
+document.getElementById('start-btn').addEventListener('click', () => {
+  document.getElementById('overlay').style.display = 'none';
+  initGame();
+  gameRunning = true;
+  requestAnimationFrame(gameLoop);
+});
+
+document.getElementById('win-banner').addEventListener('click', restartGame);
+
+function restartGame() {
+  document.getElementById('win-banner').style.display = 'none';
+  initGame();
+  gameRunning = true;
+}
+
+// ─── Initial render (show something before game starts) ──────────────────────
+initGame();
+render();
+
+// Update win score display
+document.getElementById('win-score-display').textContent = WIN_SCORE;
+</script>
+</body>
+</html>
