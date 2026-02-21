@@ -18,7 +18,6 @@
       overflow: hidden;
     }
 
-    /* Pixel-art Google Font fallback handled via canvas */
     h1 {
       color: #ffd700;
       font-size: 2rem;
@@ -114,7 +113,6 @@
       margin-top: 10px;
     }
 
-    /* Clouds decoration */
     .cloud {
       position: fixed;
       width: 80px;
@@ -149,7 +147,6 @@
       100% { transform: translateX(0); }
     }
 
-    /* Ground blocks at the bottom */
     #ground {
       display: flex;
       margin-top: 6px;
@@ -170,14 +167,14 @@
 </head>
 <body>
 
-  <!-- Decorative clouds -->
   <div class="cloud" id="c1"></div>
   <div class="cloud" id="c2"></div>
   <div class="cloud" id="c3"></div>
 
   <h1>MARIO &amp; LUIGI PONG</h1>
   <div id="controls-info">
-    MARIO (left): W / S &nbsp;&nbsp;|&nbsp;&nbsp; LUIGI (right): &uarr; / &darr;
+    MARIO (left): W / S &nbsp;&nbsp;|&nbsp;&nbsp; LUIGI (right): &uarr; / &darr;<br>
+    &#11088; Star=Speed Boost &nbsp; &#127812; Mushroom=Big Paddle &nbsp; &#127803; Flower=Shrink Foe &nbsp; &#128126; Goomba=Wild Bounce
   </div>
 
   <div id="game-wrapper">
@@ -188,7 +185,9 @@
       <p>
         MARIO controls LEFT paddle: W &amp; S<br>
         LUIGI controls RIGHT paddle: &uarr; &amp; &darr;<br>
-        First to <span id="win-score-display">7</span> points wins!
+        First to <span id="win-score-display">7</span> points wins!<br><br>
+        &#11088; Star = Speed Boost &nbsp;&nbsp; &#127812; Mushroom = Big Paddle<br>
+        &#127803; Fire Flower = Shrink Opponent &nbsp;&nbsp; &#128126; Goomba = Wild Bounce
       </p>
       <button id="start-btn">PRESS START!</button>
     </div>
@@ -199,36 +198,20 @@
     </div>
   </div>
 
-  <!-- Decorative ground blocks -->
   <div id="ground">
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
-    <div class="block q"></div>
-    <div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
+    <div class="block q"></div><div class="block"></div>
     <div class="block q"></div>
   </div>
 
@@ -266,62 +249,65 @@ function soundPaddleHit() {
   beep(440, 'square', 0.08, 0.25);
   setTimeout(() => beep(550, 'square', 0.06, 0.15), 40);
 }
-
-function soundWallHit() {
-  beep(300, 'square', 0.07, 0.2);
-}
-
-function soundScore() {
-  // Mario coin sound approximation
-  [988, 1319].forEach((f, i) => setTimeout(() => beep(f, 'square', 0.12, 0.3), i * 100));
-}
-
-function soundWin() {
-  const melody = [523, 659, 784, 1047];
-  melody.forEach((f, i) => setTimeout(() => beep(f, 'square', 0.18, 0.35), i * 160));
-}
+function soundWallHit()  { beep(300, 'square', 0.07, 0.2); }
+function soundScore()    { [988, 1319].forEach((f, i) => setTimeout(() => beep(f, 'square', 0.12, 0.3), i * 100)); }
+function soundWin()      { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 'square', 0.18, 0.35), i * 160)); }
+function soundPowerUp()  { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 'square', 0.1, 0.3), i * 60)); }
+function soundStar()     { [1047, 1319, 1568, 2093].forEach((f, i) => setTimeout(() => beep(f, 'sine', 0.08, 0.25), i * 50)); }
+function soundGoomba()   { beep(200, 'square', 0.15, 0.4); setTimeout(() => beep(100, 'square', 0.1, 0.3), 80); }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const PADDLE_W = 18;
-const PADDLE_H = 90;
-const BALL_SIZE = 14;
-const PADDLE_SPEED = 6;
-const WIN_SCORE = 7;
-const WALL_MARGIN = 10;
+const PADDLE_W      = 18;
+const PADDLE_H      = 90;
+const BALL_SIZE     = 14;
+const PADDLE_SPEED  = 6;
+const WIN_SCORE     = 7;
+const WALL_MARGIN   = 10;
+const POWERUP_SIZE  = 22;
+const GOOMBA_PX     = 24;   // rendered size (8 pixels * scale 3)
+const EFFECT_FRAMES = 480;  // ~8 seconds at 60fps
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let gameRunning = false;
 let gameOver    = false;
 let mario, luigi, ball, scores, keys;
+let lastHitter  = null;   // 'mario' or 'luigi'
+let powerUp     = null;   // { x, y, type }
+let goomba      = null;   // { x, y, dir, squished, timer }
+let marioFX     = {};     // { speed, size, shrink } — frame countdowns
+let luigiFX     = {};
+let spawnTimer  = 0;
+let goombaTimer = 0;
+let frameCount  = 0;
 
 function initGame() {
-  mario = { x: 20, y: H/2 - PADDLE_H/2, w: PADDLE_W, h: PADDLE_H, dy: 0 };
-  luigi = { x: W - 20 - PADDLE_W, y: H/2 - PADDLE_H/2, w: PADDLE_W, h: PADDLE_H, dy: 0 };
-  ball  = resetBall();
+  mario  = { x: 20, y: H/2 - PADDLE_H/2, w: PADDLE_W, h: PADDLE_H, dy: 0 };
+  luigi  = { x: W - 20 - PADDLE_W, y: H/2 - PADDLE_H/2, w: PADDLE_W, h: PADDLE_H, dy: 0 };
+  ball   = resetBall();
   scores = { mario: 0, luigi: 0 };
   keys   = {};
-  gameOver = false;
+  gameOver    = false;
+  lastHitter  = null;
+  powerUp     = null;
+  goomba      = null;
+  marioFX     = { speed: 0, size: 0, shrink: 0 };
+  luigiFX     = { speed: 0, size: 0, shrink: 0 };
+  spawnTimer  = 300;   // first power-up after ~5 s
+  goombaTimer = 540;   // first goomba after ~9 s
+  frameCount  = 0;
 }
 
 function resetBall(lastScoredSide = null) {
   const angle = (Math.random() * 60 - 30) * Math.PI / 180;
-  let dx = 5 * Math.cos(angle);
-  let dy = 5 * Math.sin(angle);
-  // Serve toward the player who just lost (or random on start)
-  if (lastScoredSide === 'mario') dx = -Math.abs(dx); // toward luigi
-  else if (lastScoredSide === 'luigi') dx =  Math.abs(dx); // toward mario
+  let dx = 7 * Math.cos(angle);
+  let dy = 7 * Math.sin(angle);
+  if      (lastScoredSide === 'mario') dx = -Math.abs(dx);
+  else if (lastScoredSide === 'luigi') dx =  Math.abs(dx);
   else dx = Math.random() < 0.5 ? Math.abs(dx) : -Math.abs(dx);
-  return {
-    x: W/2, y: H/2,
-    dx, dy,
-    size: BALL_SIZE,
-    speed: 5,
-    hitCount: 0,
-    trail: []
-  };
+  return { x: W/2, y: H/2, dx, dy, size: BALL_SIZE, speed: 7, hitCount: 0, trail: [] };
 }
 
-// ─── Pixel Art Helpers ────────────────────────────────────────────────────────
+// ─── Pixel Art ────────────────────────────────────────────────────────────────
 function drawPixelArt(data, x, y, scale, palette) {
   for (let row = 0; row < data.length; row++) {
     for (let col = 0; col < data[row].length; col++) {
@@ -333,8 +319,6 @@ function drawPixelArt(data, x, y, scale, palette) {
   }
 }
 
-// Mario pixel art (16x24, facing right)
-// Palette: 1=skin, 2=red, 3=blue, 4=brown, 5=white, 6=black
 const MARIO_SPRITE = [
   [0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0],
   [0,0,2,2,2,2,2,2,2,2,2,0,0,0,0,0],
@@ -355,26 +339,9 @@ const MARIO_SPRITE = [
   [0,0,4,4,0,0,4,4,0,0,0,0,0,0,0,0],
   [0,4,4,4,0,0,4,4,4,0,0,0,0,0,0,0],
 ];
-const MARIO_PAL = {
-  1: '#ffa07a', // skin
-  2: '#e52521', // red
-  3: '#0050d4', // blue overalls
-  4: '#8b4513', // brown
-  5: '#fff',
-  6: '#000'
-};
+const MARIO_PAL = { 1:'#ffa07a', 2:'#e52521', 3:'#0050d4', 4:'#8b4513', 5:'#fff', 6:'#000' };
+const LUIGI_PAL = { 1:'#ffa07a', 2:'#2ab72a', 3:'#1a7a1a', 4:'#8b4513', 5:'#fff', 6:'#000' };
 
-// Luigi pixel art (same shape but green hat)
-const LUIGI_PAL = {
-  1: '#ffa07a', // skin
-  2: '#2ab72a', // green hat
-  3: '#1a7a1a', // dark green overalls
-  4: '#8b4513', // brown
-  5: '#fff',
-  6: '#000'
-};
-
-// Coin pixel art (8x8)
 const COIN_SPRITE = [
   [0,1,1,1,1,0,0,0],
   [1,2,2,2,2,1,0,0],
@@ -385,32 +352,46 @@ const COIN_SPRITE = [
   [1,2,2,2,2,1,0,0],
   [0,1,1,1,1,0,0,0],
 ];
-const COIN_PAL = { 1: '#b8860b', 2: '#ffd700' };
+const COIN_PAL = { 1:'#b8860b', 2:'#ffd700' };
 
-// ─── Drawing Functions ────────────────────────────────────────────────────────
+// Goomba (8x8 px, scale 3 → 24x24 rendered)
+const GOOMBA_SPRITE = [
+  [0,0,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,0],
+  [0,1,2,1,1,2,1,0],
+  [0,1,1,1,1,1,1,0],
+  [1,1,3,3,3,3,1,1],
+  [1,1,1,1,1,1,1,1],
+  [0,1,1,0,0,1,1,0],
+  [1,1,0,0,0,0,1,1],
+];
+const GOOMBA_SQUISHED = [
+  [0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0],
+  [1,1,1,1,1,1,1,1],
+  [1,2,1,3,3,1,2,1],
+  [1,1,1,1,1,1,1,1],
+  [0,0,0,0,0,0,0,0],
+];
+const GOOMBA_PAL = { 1:'#b8601a', 2:'#111', 3:'#ffa07a' };
 
+// ─── Draw Helpers ─────────────────────────────────────────────────────────────
 function drawBackground() {
-  // Sky
   ctx.fillStyle = '#5c94fc';
   ctx.fillRect(0, 0, W, H);
-
-  // Ground strip
   ctx.fillStyle = '#c84b0e';
   ctx.fillRect(0, H - 40, W, 40);
   ctx.fillStyle = '#5a2200';
   ctx.fillRect(0, H - 40, W, 4);
 
-  // Dotted center line (pipes style)
   ctx.setLineDash([14, 10]);
   ctx.strokeStyle = 'rgba(255,255,255,0.25)';
   ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(W/2, 0);
-  ctx.lineTo(W/2, H - 40);
-  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H - 40); ctx.stroke();
   ctx.setLineDash([]);
 
-  // Decorative question blocks
   drawQuestionBlock(W/2 - 25, H - 90);
   drawQuestionBlock(W/2 + 5,  H - 90);
 }
@@ -420,17 +401,19 @@ function drawQuestionBlock(x, y) {
   ctx.fillStyle = '#f0a000';
   ctx.fillRect(x, y, s, s);
   ctx.fillStyle = '#7a5000';
-  ctx.fillRect(x, y, s, 2);
-  ctx.fillRect(x, y + s - 2, s, 2);
-  ctx.fillRect(x, y, 2, s);
-  ctx.fillRect(x + s - 2, y, 2, s);
+  ctx.fillRect(x, y, s, 2); ctx.fillRect(x, y + s - 2, s, 2);
+  ctx.fillRect(x, y, 2, s); ctx.fillRect(x + s - 2, y, 2, s);
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 16px sans-serif';
   ctx.fillText('?', x + 7, y + 17);
 }
 
-function drawPaddle(p, spriteData, palette, label) {
-  // Paddle body
+function drawPaddle(p, spriteData, palette, label, fx) {
+  // Glow based on active effect
+  if      (fx.speed  > 0) { ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 14; }
+  else if (fx.size   > 0) { ctx.shadowColor = '#ff4444'; ctx.shadowBlur = 14; }
+  else if (fx.shrink > 0) { ctx.shadowColor = '#888';    ctx.shadowBlur =  8; }
+
   ctx.fillStyle = 'rgba(0,0,0,0.3)';
   ctx.fillRect(p.x + 3, p.y + 3, p.w, p.h);
 
@@ -439,11 +422,11 @@ function drawPaddle(p, spriteData, palette, label) {
   grad.addColorStop(1, label === 'MARIO' ? '#ff6040' : '#60e060');
   ctx.fillStyle = grad;
   ctx.fillRect(p.x, p.y, p.w, p.h);
-  ctx.strokeStyle = '#ffd700';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2;
   ctx.strokeRect(p.x, p.y, p.w, p.h);
+  ctx.shadowBlur = 0;
 
-  // Draw character sprite centered on paddle
+  // Character sprite
   const scale = 3;
   const spriteW = spriteData[0].length * scale;
   const spriteH = spriteData.length * scale;
@@ -458,90 +441,170 @@ function drawPaddle(p, spriteData, palette, label) {
   ctx.textAlign = 'center';
   ctx.fillText(label, p.x + p.w/2, p.y - 6);
   ctx.restore();
+
+  // Effect tag
+  let tag = '';
+  if      (fx.speed  > 0) tag = '\u2605FAST';
+  else if (fx.size   > 0) tag = 'BIG!';
+  else if (fx.shrink > 0) tag = 'mini';
+  if (tag) {
+    ctx.save();
+    ctx.fillStyle = fx.speed > 0 ? '#ffd700' : fx.size > 0 ? '#ff6060' : '#aaa';
+    ctx.font = '9px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, p.x + p.w/2, p.y + p.h + 14);
+    ctx.restore();
+  }
 }
 
 function drawBall(b) {
-  // Trail effect
   for (let i = 0; i < b.trail.length; i++) {
     const t = b.trail[i];
-    const alpha = (i / b.trail.length) * 0.4;
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = (i / b.trail.length) * 0.4;
     ctx.fillStyle = '#ffd700';
     ctx.beginPath();
     ctx.arc(t.x, t.y, b.size/2 * (i / b.trail.length), 0, Math.PI*2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-
-  // Draw coin sprite for ball
-  const scale = 2;
-  drawPixelArt(COIN_SPRITE, b.x - b.size/2 - 2, b.y - b.size/2 - 2, scale, COIN_PAL);
-  ctx.strokeStyle = '#b8860b';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(b.x, b.y, b.size/2 + 2, 0, Math.PI*2);
-  ctx.stroke();
+  drawPixelArt(COIN_SPRITE, b.x - b.size/2 - 2, b.y - b.size/2 - 2, 2, COIN_PAL);
+  ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(b.x, b.y, b.size/2 + 2, 0, Math.PI*2); ctx.stroke();
 }
 
 function drawScore() {
   ctx.fillStyle = '#ffd700';
   ctx.font = 'bold 36px "Courier New", monospace';
-  ctx.textAlign = 'right';
-  ctx.fillText(scores.mario, W/2 - 40, 50);
-  ctx.textAlign = 'left';
-  ctx.fillText(scores.luigi, W/2 + 40, 50);
-
-  // Separator
+  ctx.textAlign = 'right'; ctx.fillText(scores.mario, W/2 - 40, 50);
+  ctx.textAlign = 'left';  ctx.fillText(scores.luigi, W/2 + 40, 50);
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 28px "Courier New", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(':', W/2, 48);
+  ctx.textAlign = 'center'; ctx.fillText(':', W/2, 48);
 
-  // Hearts / lives indicator (decorative)
   for (let i = 0; i < WIN_SCORE; i++) {
-    const filled = i < scores.mario;
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = filled ? '#e52521' : '#444';
-    ctx.fillText('♥', 60 + i * 18, 20);
+    ctx.font = '14px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = i < scores.mario ? '#e52521' : '#444';
+    ctx.fillText('\u2665', 60 + i * 18, 20);
   }
   for (let i = 0; i < WIN_SCORE; i++) {
-    const filled = i < scores.luigi;
     ctx.textAlign = 'right';
-    ctx.fillStyle = filled ? '#2ab72a' : '#444';
-    ctx.fillText('♥', W - 60 - i * 18, 20);
+    ctx.fillStyle = i < scores.luigi ? '#2ab72a' : '#444';
+    ctx.fillText('\u2665', W - 60 - i * 18, 20);
   }
 }
 
 function drawPipes() {
-  // Left pipe
   ctx.fillStyle = '#2ab72a';
   ctx.fillRect(30, H - 100, 36, 60);
   ctx.fillStyle = '#1a8a1a';
   ctx.fillRect(24, H - 106, 48, 14);
-
-  // Right pipe
   ctx.fillRect(W - 66, H - 100, 36, 60);
   ctx.fillStyle = '#2ab72a';
   ctx.fillRect(W - 72, H - 106, 48, 14);
 }
 
+function drawPowerUp(pu) {
+  if (!pu) return;
+  const flash = (frameCount % 20) < 10;
+  ctx.save();
+  ctx.translate(pu.x, pu.y);
+
+  if (pu.type === 'star') {
+    ctx.fillStyle = flash ? '#ffd700' : '#ffaa00';
+    ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 2;
+    drawStarPath(0, 0, 5, POWERUP_SIZE, POWERUP_SIZE * 0.45);
+    ctx.fill(); ctx.stroke();
+
+  } else if (pu.type === 'mushroom') {
+    // Cap
+    ctx.fillStyle = flash ? '#e52521' : '#b82020';
+    ctx.beginPath(); ctx.arc(0, -4, POWERUP_SIZE * 0.58, Math.PI, 0); ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#7a1010'; ctx.lineWidth = 1.5; ctx.stroke();
+    // Dots
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-6, -8, 3.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(5, -11, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(1, -4, 2.5, 0, Math.PI*2); ctx.fill();
+    // Stem
+    ctx.fillStyle = '#f0c060';
+    ctx.fillRect(-7, -4, 14, 12);
+    ctx.strokeStyle = '#b88a30'; ctx.lineWidth = 1; ctx.strokeRect(-7, -4, 14, 12);
+    // Eyes
+    ctx.fillStyle = '#7a1010';
+    ctx.beginPath(); ctx.arc(-2, 2, 1.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4,  2, 1.5, 0, Math.PI*2); ctx.fill();
+
+  } else if (pu.type === 'flower') {
+    // Petals
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      ctx.fillStyle = (i % 2 === 0) ? (flash ? '#ff6600' : '#ff3300') : '#ffcc00';
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 9, Math.sin(a) * 9 - 2, 6, 0, Math.PI*2); ctx.fill();
+    }
+    // Center
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, -2, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = flash ? '#ffcc00' : '#ffaa00';
+    ctx.beginPath(); ctx.arc(0, -2, 3, 0, Math.PI*2); ctx.fill();
+    // Stem + leaf
+    ctx.strokeStyle = '#2ab72a'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(0, 3); ctx.lineTo(0, 14); ctx.stroke();
+    ctx.fillStyle = '#2ab72a';
+    ctx.beginPath(); ctx.ellipse(-5, 10, 5, 3, -Math.PI/4, 0, Math.PI*2); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawStarPath(cx, cy, points, outerR, innerR) {
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    i === 0
+      ? ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle))
+      : ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+  }
+  ctx.closePath();
+}
+
+function drawGoomba(g) {
+  if (!g) return;
+  const scale = 3;
+  const sprite = g.squished ? GOOMBA_SQUISHED : GOOMBA_SPRITE;
+  ctx.save();
+  ctx.globalAlpha = g.squished ? Math.min(1, g.timer / 20) : 1;
+  drawPixelArt(sprite, g.x - GOOMBA_PX/2, g.y - GOOMBA_PX, scale, GOOMBA_PAL);
+  ctx.restore();
+}
+
 // ─── Game Logic ───────────────────────────────────────────────────────────────
+function calcPaddleH(fx) {
+  if (fx.size   > 0) return Math.round(PADDLE_H * 1.65);
+  if (fx.shrink > 0) return Math.round(PADDLE_H * 0.50);
+  return PADDLE_H;
+}
 
 function update() {
   if (!gameRunning || gameOver) return;
+  frameCount++;
+
+  // Dynamic paddle speed (star power-up doubles it)
+  const mSpeed = PADDLE_SPEED * (marioFX.speed > 0 ? 2.2 : 1);
+  const lSpeed = PADDLE_SPEED * (luigiFX.speed > 0 ? 2.2 : 1);
 
   // Paddle movement
-  if (keys['w'] || keys['W']) mario.dy = -PADDLE_SPEED;
-  else if (keys['s'] || keys['S']) mario.dy = PADDLE_SPEED;
+  if      (keys['w'] || keys['W']) mario.dy = -mSpeed;
+  else if (keys['s'] || keys['S']) mario.dy =  mSpeed;
   else mario.dy = 0;
 
-  if (keys['ArrowUp'])   luigi.dy = -PADDLE_SPEED;
-  else if (keys['ArrowDown']) luigi.dy = PADDLE_SPEED;
+  if      (keys['ArrowUp'])   luigi.dy = -lSpeed;
+  else if (keys['ArrowDown']) luigi.dy =  lSpeed;
   else luigi.dy = 0;
 
-  mario.y = Math.max(WALL_MARGIN, Math.min(H - 40 - PADDLE_H - WALL_MARGIN, mario.y + mario.dy));
-  luigi.y = Math.max(WALL_MARGIN, Math.min(H - 40 - PADDLE_H - WALL_MARGIN, luigi.y + luigi.dy));
+  mario.y = Math.max(WALL_MARGIN, Math.min(H - 40 - mario.h - WALL_MARGIN, mario.y + mario.dy));
+  luigi.y = Math.max(WALL_MARGIN, Math.min(H - 40 - luigi.h - WALL_MARGIN, luigi.y + luigi.dy));
 
   // Ball trail
   ball.trail.push({ x: ball.x, y: ball.y });
@@ -551,7 +614,7 @@ function update() {
   ball.x += ball.dx;
   ball.y += ball.dy;
 
-  // Wall bounces (top / bottom of play area)
+  // Wall bounces
   if (ball.y - ball.size/2 <= WALL_MARGIN) {
     ball.y = WALL_MARGIN + ball.size/2;
     ball.dy = Math.abs(ball.dy);
@@ -566,24 +629,47 @@ function update() {
   // Paddle collisions
   if (rectCircle(mario, ball)) {
     ball.dx = Math.abs(ball.dx);
-    // Angle based on where ball hits paddle
-    const relativeHit = (ball.y - mario.y) / mario.h - 0.5;
-    ball.dy = relativeHit * 8;
+    ball.dy = ((ball.y - mario.y) / mario.h - 0.5) * 8;
     clampBallSpeed();
     soundPaddleHit();
     ball.hitCount++;
+    lastHitter = 'mario';
   }
-
   if (rectCircle(luigi, ball)) {
     ball.dx = -Math.abs(ball.dx);
-    const relativeHit = (ball.y - luigi.y) / luigi.h - 0.5;
-    ball.dy = relativeHit * 8;
+    ball.dy = ((ball.y - luigi.y) / luigi.h - 0.5) * 8;
     clampBallSpeed();
     soundPaddleHit();
     ball.hitCount++;
+    lastHitter = 'luigi';
   }
 
-  // Score
+  // Goomba collision
+  if (goomba && !goomba.squished) {
+    const gdx = ball.x - goomba.x;
+    const gdy = ball.y - (goomba.y - GOOMBA_PX / 2);
+    if (Math.abs(gdx) < GOOMBA_PX * 0.9 && Math.abs(gdy) < GOOMBA_PX * 0.9) {
+      const spd = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+      const a   = (Math.random() * 100 - 50) * Math.PI / 180;
+      ball.dx   = (ball.dx > 0 ? -1 : 1) * spd * Math.cos(a);
+      ball.dy   = spd * Math.sin(a);
+      goomba.squished = true;
+      goomba.timer    = 60;
+      soundGoomba();
+    }
+  }
+
+  // Power-up collision
+  if (powerUp) {
+    const pdx = ball.x - powerUp.x;
+    const pdy = ball.y - powerUp.y;
+    if (Math.sqrt(pdx*pdx + pdy*pdy) < POWERUP_SIZE + ball.size / 2) {
+      applyPowerUp(powerUp.type, lastHitter);
+      powerUp = null;
+    }
+  }
+
+  // Scoring
   if (ball.x + ball.size/2 < 0) {
     scores.luigi++;
     soundScore();
@@ -597,21 +683,93 @@ function update() {
     if (!gameOver) ball = resetBall('mario');
   }
 
-  // Gradually speed up ball
-  const speedFactor = 1 + ball.hitCount * 0.012;
+  // Gradually speed up ball — faster acceleration, higher cap
+  const speedFactor  = 1 + ball.hitCount * 0.018;
   const currentSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
-  const targetSpeed = Math.min(ball.speed * speedFactor, 16);
+  const targetSpeed  = Math.min(ball.speed * speedFactor, 22);
   if (currentSpeed > 0.1) {
     const ratio = targetSpeed / currentSpeed;
     ball.dx *= ratio;
     ball.dy *= ratio;
   }
+
+  // Power-up spawn
+  spawnTimer--;
+  if (spawnTimer <= 0 && !powerUp) {
+    spawnPowerUp();
+    spawnTimer = 360 + Math.floor(Math.random() * 240);
+  }
+
+  // Goomba spawn
+  goombaTimer--;
+  if (goombaTimer <= 0 && !goomba) {
+    spawnGoomba();
+    goombaTimer = 600 + Math.floor(Math.random() * 360);
+  }
+
+  // Move goomba
+  if (goomba) {
+    if (goomba.squished) {
+      goomba.timer--;
+      if (goomba.timer <= 0) goomba = null;
+    } else {
+      goomba.x += goomba.dir * 1.5;
+      if (goomba.x < 80 || goomba.x > W - 80) goomba.dir *= -1;
+    }
+  }
+
+  // Tick effects
+  tickFX();
+}
+
+function spawnPowerUp() {
+  const types = ['star', 'mushroom', 'flower'];
+  const type  = types[Math.floor(Math.random() * types.length)];
+  const x = W * 0.22 + Math.random() * W * 0.56;
+  const y = 80 + Math.random() * (H - 200);
+  powerUp = { x, y, type };
+}
+
+function spawnGoomba() {
+  const fromLeft   = Math.random() < 0.5;
+  const lanes      = [110, 175, 240, 300, 360];
+  const y          = lanes[Math.floor(Math.random() * lanes.length)];
+  goomba = { x: fromLeft ? 90 : W - 90, y, dir: fromLeft ? 1 : -1, squished: false, timer: 0 };
+}
+
+function applyPowerUp(type, hitter) {
+  if (!hitter) return;
+  const myFX  = hitter === 'mario' ? marioFX : luigiFX;
+  const oppFX = hitter === 'mario' ? luigiFX : marioFX;
+
+  if (type === 'star') {
+    myFX.speed = EFFECT_FRAMES;
+    soundStar();
+  } else if (type === 'mushroom') {
+    myFX.size  = EFFECT_FRAMES;
+    soundPowerUp();
+  } else if (type === 'flower') {
+    oppFX.shrink = EFFECT_FRAMES;
+    soundPowerUp();
+  }
+}
+
+function tickFX() {
+  if (marioFX.speed  > 0) marioFX.speed--;
+  if (marioFX.size   > 0) marioFX.size--;
+  if (marioFX.shrink > 0) marioFX.shrink--;
+  mario.h = calcPaddleH(marioFX);
+
+  if (luigiFX.speed  > 0) luigiFX.speed--;
+  if (luigiFX.size   > 0) luigiFX.size--;
+  if (luigiFX.shrink > 0) luigiFX.shrink--;
+  luigi.h = calcPaddleH(luigiFX);
 }
 
 function clampBallSpeed() {
   const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
-  if (speed < 4) {
-    const ratio = 4 / speed;
+  if (speed < 5) {
+    const ratio = 5 / speed;
     ball.dx *= ratio;
     ball.dy *= ratio;
   }
@@ -630,27 +788,28 @@ function checkWin(side) {
     gameOver = true;
     gameRunning = false;
     soundWin();
-    const banner = document.getElementById('win-banner');
     document.getElementById('winner-text').textContent =
-      side === 'mario' ? 'MARIO WINS! 🍄' : 'LUIGI WINS! 🌟';
-    banner.style.display = 'block';
+      side === 'mario' ? 'MARIO WINS! \uD83C\uDF44' : 'LUIGI WINS! \uD83C\uDF1F';
+    document.getElementById('win-banner').style.display = 'block';
   }
 }
 
-// ─── Render Loop ──────────────────────────────────────────────────────────────
+// ─── Render ───────────────────────────────────────────────────────────────────
 function render() {
   ctx.clearRect(0, 0, W, H);
   drawBackground();
   drawPipes();
   drawScore();
-  drawPaddle(mario, MARIO_SPRITE, MARIO_PAL, 'MARIO');
-  drawPaddle(luigi, MARIO_SPRITE, LUIGI_PAL, 'LUIGI');
+  drawPowerUp(powerUp);
+  drawGoomba(goomba);
+  drawPaddle(mario, MARIO_SPRITE, MARIO_PAL, 'MARIO', marioFX);
+  drawPaddle(luigi, MARIO_SPRITE, LUIGI_PAL, 'LUIGI', luigiFX);
   drawBall(ball);
 }
 
 let lastTime = 0;
 function gameLoop(ts) {
-  if (ts - lastTime >= 16) { // ~60fps cap
+  if (ts - lastTime >= 16) {
     update();
     render();
     lastTime = ts;
@@ -658,24 +817,21 @@ function gameLoop(ts) {
   requestAnimationFrame(gameLoop);
 }
 
-// ─── Input Handling ───────────────────────────────────────────────────────────
+// ─── Input ────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   keys[e.key] = true;
   if (['ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
-
-  // Space to restart after win
   if (e.key === ' ' && gameOver) restartGame();
 });
 document.addEventListener('keyup', e => { keys[e.key] = false; });
 
-// ─── UI Button Logic ──────────────────────────────────────────────────────────
+// ─── UI ───────────────────────────────────────────────────────────────────────
 document.getElementById('start-btn').addEventListener('click', () => {
   document.getElementById('overlay').style.display = 'none';
   initGame();
   gameRunning = true;
   requestAnimationFrame(gameLoop);
 });
-
 document.getElementById('win-banner').addEventListener('click', restartGame);
 
 function restartGame() {
@@ -684,11 +840,8 @@ function restartGame() {
   gameRunning = true;
 }
 
-// ─── Initial render (show something before game starts) ──────────────────────
 initGame();
 render();
-
-// Update win score display
 document.getElementById('win-score-display').textContent = WIN_SCORE;
 </script>
 </body>
